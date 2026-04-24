@@ -1,1215 +1,705 @@
-# Gemini 풀코스 — 툴 중심 4교시 전체 콘텐츠 추출
+# Lovable 빌드 가이드 — Gemini 풀코스 강의 사이트 재현
 
-> 출처: https://lg-gemini-lecture-260421-fwqy.vercel.app/  
-> 추출일: 2026-04-24
-
----
-
-## 📋 전체 구조
-
-| 교시 | 메인 툴 | 주 역량 | 부 역량 |
-|------|---------|---------|---------|
-| 0교시 | 오리엔테이션 | — | — |
-| 1교시 | Gems | 실행하기 | 축적하기 |
-| 2교시 | Deep Research | 질문하기 | 설득하기 |
-| 3교시 | AI Studio | 실행하기 | 말하기 |
-| 4교시 | NotebookLM | 듣기 | 축적하기 |
-| 부록 | 치트시트 6종 | — | — |
+> 기준 앱: https://lg-gemini-lecture-260421-fwqy.vercel.app/  
+> 목표: 동일 구조 · 동일 콘텐츠를 Lovable + GitHub로 재현
 
 ---
 
-# 🏠 메인 페이지
+## 1. 기술 스택 결정
 
-**네 개의 툴, 여섯 개의 역량.**
+현재 앱은 **Next.js App Router** 기반입니다.  
+Lovable은 **React + Vite + React Router** 환경이므로, 아래와 같이 대응합니다.
 
-Gems · Deep Research · AI Studio · NotebookLM을 교시별로 익히며 JB의 6역량 (듣기 · 말하기 · 질문 · 실행 · 설득 · 축적)을 실습 단위로 연결합니다.
+| 원본 (Next.js) | Lovable 대응 |
+|---------------|-------------|
+| `app/orientation/setup/page.tsx` | `src/pages/orientation/Setup.tsx` |
+| `app/period/[id]/page.tsx` | `src/pages/period/PeriodPage.tsx` |
+| `app/period/[id]/clip/[clipId]/page.tsx` | `src/pages/period/ClipPage.tsx` |
+| `app/appendix/[slug]/page.tsx` | `src/pages/appendix/AppendixPage.tsx` |
+| Layout (글로벌 네비) | `src/components/layout/SiteLayout.tsx` |
 
-0교시에서 환경을 세팅하고, 1~4교시에서 툴마다 한 세트씩 손에 익힌 뒤, 부록 치트시트로 돌려볼 수 있습니다.
-
----
-
-# 0교시 · 오리엔테이션
-
-> 예상 10분
-
-**오전 8:30.** 김지연 담당자는 커피를 들고 자리에 앉습니다. 오늘은 오후에 현장 간담회가 있고, 그 뒤로 경영진 보고까지 이어집니다. 혼자서는 벅찬 하루 — 그런데 오늘은 다릅니다. 브라우저를 열어 Gemini를 띄우는 순간, 하루가 **4교시짜리 짧은 강의처럼** 정돈됩니다.
-
-## 목차
-1. 이 강의의 구조 — 툴 중심 4교시
-2. JB의 6가지 역량
-3. Gemini 접속하기
-4. 오늘 실습 준비물
-5. 실행 환경 체크리스트
-6. JB의 하루 — 07:00~17:30
-
----
-
-## 이 강의의 구조 — 툴 중심 4교시
-
-이 강의는 "업무 프로세스"가 아니라 "**도구 1종 = 1교시**" 축으로 설계되어 있습니다.
-
-| 교시 | 메인 툴 | 무엇을 만드는가 |
-|------|---------|----------------|
-| 1교시 | Gems | 반복 업무를 대신할 나만의 Gemini 전문가 |
-| 2교시 | Deep Research | 설득에 쓸 근거 리포트 |
-| 3교시 | AI Studio | 내 업무에 맞는 미니 웹앱 |
-| 4교시 | NotebookLM | 자료 기반으로 답하는 프로젝트 노트북 |
-
-각 교시는 **메인 트랙**과 **심화 트랙**으로 나뉘며, 끝에는 짧은 **체크포인트**로 오늘의 산출물을 점검합니다.
-
-> **이 강의의 약속**: 설명보다 **적용**, 기능 나열보다 **결과물**. 각 교시 끝에는 실제로 "저장·공유·재사용 가능한 자산"이 손에 남습니다.
-
----
-
-## JB의 6가지 역량
-
-**JB(Junior Board)** 는 LG에서 현장과 경영진 사이의 **통역사 역할**을 맡는 담당자입니다.
-
-| 역량 | 언제 쓰는가 | 이 강의에서의 연결 |
-|------|-------------|-------------------|
-| 듣기 | 현장·자료의 목소리 수집·분석 | 4교시 NotebookLM (주) |
-| 말하기 | 관계를 지키며 메시지 전달 | 3교시 AI Studio (부) |
-| 질문하기 | 상대 맞춤 인터뷰·조사 설계 | 2교시 Deep Research (주) |
-| 실행하기 | 회의·의사결정을 즉시 실행으로 | 1교시 Gems, 3교시 AI Studio (주) |
-| 설득하기 | 데이터 기반 경영진 보고 | 2교시 Deep Research (부) |
-| 축적하기 | 노하우를 팀 자산으로 | 1교시 Gems, 4교시 NotebookLM (부) |
-
-> **6역량의 관계**: 앞 세 가지(듣기·말하기·질문하기)는 타인과의 관계, 뒤 세 가지(실행하기·설득하기·축적하기)는 성과와의 관계를 다룹니다.
-
----
-
-## Gemini 접속하기
-
-1. **브라우저에서 접속**: 크롬에서 gemini.google.com 접속. 또는 구글 홈 우측 상단 앱 런처 → Gemini 아이콘
-2. **Google 계정 로그인 확인**: 우측 상단 프로필 아이콘 클릭 → 회사 Workspace 계정 확인 (개인 @gmail.com이면 일부 기능 제한)
-3. **모델 버전 확인**: 좌측 상단 드롭다운에서 Gemini 2.5 이상 선택 확인
-
-> **⚠️ 접속이 막히면**: 개인 Gmail 계정에서는 Gems·Canvas·NotebookLM·Sheets의 `=GEMINI()` 함수 등이 제한됩니다. 회사 Workspace 계정으로 로그인하고, IT 부서에 문의하세요.
-
----
-
-## 오늘 실습 준비물
-
-- **Google Workspace 계정** — Gemini 접속 가능 여부 사전 확인
-- **지난 달 인터뷰·회의 텍스트** 2~3개 (메모·회의록 등)
-- **인터뷰 녹음 파일** 1개 이상 (MP3 또는 WAV)
-- **오후 간담회 정보** — 일시·장소·참석자·목적
-- **크롬 브라우저 최신 버전**
-
----
-
-## 실행 환경 체크리스트
-
-1. **Workspace 계정인지 확인**: 이메일 도메인이 회사 도메인(예: @lge.com)인지 확인
-2. **요금·사용량 한계 인지**: Deep Research 하루 5~10건, NotebookLM 소스 50개/노트북 등
-3. **사내망에서 3개 도메인 접속 가능**: gemini.google.com · aistudio.google.com · notebooklm.google.com
-4. **교시별 도메인 전환 인지**: 1·2교시는 gemini.google.com, 3교시는 aistudio.google.com, 4교시는 notebooklm.google.com
-
----
-
-## JB의 하루 — 07:00~17:30
-
-| 시간대 | 툴 | 내용 |
-|--------|-----|------|
-| 오전 (출근) | Gems | 일정 도우미·VoE 분석가·페르소나 3종으로 반복 업무 자동화 |
-| 오전 후반~점심 | Deep Research | 5대 기업 조직문화·직군별 고충 심층 조사로 경영진 보고 근거 수집 |
-| 오후 초반 | AI Studio | 리서치 결과를 보여주는 대시보드 웹앱 제작 |
-| 오후~초저녁 | NotebookLM | 맥킨지 보고서·사내 자료를 소스로 묶어 근거 있는 답변 정리 |
-
----
-
-# 1교시 · Gems — 나만의 전문가 만들기
-
-**JB 역량**: 주 실행하기 / 부 축적하기  
-**하루 중**: 오전, 반복 업무 자동화 준비  
-**예상 시간**: 약 70분  
-**실습 개수**: 5개
-
-> "매번 같은 역할·같은 규칙을 프롬프트에 붙여넣는 게 일이에요."  
-> Gems = 역할·규칙·출력 형식을 저장해둔 나만의 맞춤 AI 전문가
-
-## 이 교시 흐름
-
-1. **개념·인터페이스** (5분) — Gem 관리자, 인스트럭션, 저장·공유 구조
-2. **실습 ① 오늘 일정 도우미 Gem** (15분) — 체크리스트 자동 생성
-3. **실습 ② VoE 분석가 Gem** (15분) — 발언 분류·패턴 탐지
-4. **실습 ③ 페르소나 3종 Gem + 질문지** (20분) — 인터뷰 페르소나 + 맞춤 질문지
-5. **실습 ④ 메시지 코치 Gem** (10분, 선택)
-6. **정리 + 체크포인트** (5분)
-
-> **이 교시가 끝나면**: 최소 2~4개의 **재사용 가능한 Gem**이 손에 남습니다.
-
----
-
-## 1-1. Gems 개념·인터페이스
-
-> 예상 5분
-
-**Gem = 역할 + 규칙 + 출력 형식을 미리 저장해둔 나만의 Gemini 프로필.**
-
-| 항목 | 일반 대화 | Gem |
-|------|-----------|-----|
-| 역할 설정 | 매번 프롬프트에 붙여넣기 | 저장된 인스트럭션 자동 적용 |
-| 결과 일관성 | 대화마다 형식이 달라짐 | 항상 같은 구조로 출력 |
-| 팀 공유 | 프롬프트 문서로 전달 | Gem 링크 한 줄로 공유 |
-| 적합한 상황 | 일회성 작업 | 반복 패턴이 있는 업무 |
-
-### Gem 관리자 접근
-
-1. Gemini 좌측 사이드바 → 'Gem 관리자' 클릭 (또는 gemini.google.com/gems)
-2. 왼쪽에 내 Gem 목록과 기본 제공 Gem 나열됨
-3. 오른쪽 '새 Gem 만들기' 버튼으로 시작
-
-### Gem 생성 화면 3칸
-
-- **이름**: Gem 이름
-- **지시사항(Instruction)**: 역할·규칙·출력 형식
-- **지식(Knowledge)**: 선택, 참고 파일
-
-### 이 교시에서 만들 Gem 4개
-
-| # | Gem 이름 | 역할 | 재사용 포인트 |
-|---|----------|------|--------------|
-| 1 | 오늘 일정 도우미 | 하루 체크리스트 자동 생성 | 매일 아침 반복 |
-| 2 | VoE 분석가 | 발언 분류·패턴 탐지 | 설문·면담·녹음 정리 |
-| 3 | 페르소나 3종 | 세대·직군별 인터뷰 대상자 시뮬레이션 | 인터뷰·조사 설계 |
-| 4 | 메시지 코치 | 민감한 사실을 3가지 버전으로 | 메일·공지·피드백 |
-
-> **TIP**: Gem은 완성품이 아니라 **쓰면서 지시사항을 조금씩 고쳐가는** 운영 방식이 기본입니다.
-
----
-
-## 1-2. 실습 ① 오늘 일정 도우미 Gem
-
-> 예상 15분
-
-**장면**: 오전 8:35. 오후 간담회를 앞둔 JB 김지연이 일정 도우미 Gem에 상황 2~3줄을 입력해 시간대별 체크리스트를 받는 장면.
-
-### Step 1 — Gem 인스트럭션
-
+**Lovable 초기 프롬프트에 반드시 명시할 것:**
 ```
-너는 [JB 담당자]의 하루 업무 체크리스트를 만드는 일정 코치야.
-
-[역할]
-- 사용자가 오늘의 핵심 일정(회의·간담회·보고 등)을 간단히 알려주면, 시간대별 체크리스트를 만들어주는 전문가
-- 업무 흐름을 '준비 → 진행 → 정리' 3단계로 항상 구조화한다
-
-[출력 형식]
-항상 아래 표로 답해:
-
-## 오늘의 체크리스트
-| 시간대 | 할 일 | 준비물·도구 |
-| --- | --- | --- |
-
-표 아래에 다음 세 항목을 간단히 정리:
-- 오늘 가장 먼저 해야 할 것 (1개)
-- 가장 중요한 의사결정 포인트 (1개)
-- 하루 마지막 정리용 메모 양식 (1~2줄)
-
-[규칙]
-- 시간대는 30분 단위로 촘촘하게 나눈다
-- 준비물·도구 칸에는 활용할 Gemini/Workspace 도구를 구체적으로 명시한다
-- "점심 전까지", "오후 중"처럼 모호한 시간 대신 08:30~09:00 형식으로 쓴다
-- 사용자가 말하지 않은 일정은 추가하지 않는다
-```
-
-### Step 2 — 테스트용 입력 예시
-
-```
-오늘 오후 2시에 현장 간담회가 있어.
-간담회 준비부터 진행, 보고까지 해야 해.
-
-[상황]
-- 나: JB 담당자, 입사 5년 차
-- 간담회 목적: 현장 구성원 VoE(Voice of Employee) 청취
-- 참석자: 현장 팀원 약 20명
-- 장소: 본사 3층 대회의실
-- 시간: 오후 2시~4시
-```
-
-### Step 3 — 다듬기 팁
-
-- **시간 단위 바꾸기**: "30분 단위" → "15분 단위" 또는 "1시간 단위"
-- **반복 업무 끼워넣기**: "매일 10:00 팀 스탠드업" 등 고정 일정 명시
-- **결과 톤 바꾸기**: 표가 길면 "요점 중심 불릿 3~5개"로 변경
-
-### 산출물 체크리스트
-
-- [ ] 오늘 일정 도우미 Gem 저장 완료
-- [ ] 실제 오늘 상황 1건으로 결과 1회 생성
-- [ ] 내 업무 맥락에 맞춰 지시사항 1곳 수정
-- [ ] Gem 링크 북마크
-
----
-
-## 1-3. 실습 ② VoE 분석가 Gem
-
-> 예상 15분
-
-**장면**: 오전 9:30. 지난달 인터뷰 텍스트를 반복 분석할 때마다 프롬프트를 새로 쓰는 번거로움을 Gem으로 해결.
-
-### Step 1 — Gem 인스트럭션
-
-```
-너는 현장 구성원 목소리(VoE) 분석 전문가야.
-
-[역할]
-- 구성원의 발언을 체계적으로 분류하고 패턴을 발견하는 분석가
-- 감정의 결을 놓치지 않으면서도 객관적으로 정리하는 전문가
-
-[분류 기준]
-사용자가 발언 내용을 입력하면, 각 발언을 다음 3가지로 분류해:
-1. 감정 — 현재 상황에 대한 느낌 (불만, 불안, 만족, 기대 등)
-2. 사실 — 구체적인 상황이나 데이터 언급
-3. 요청 — 변화를 원하는 구체적 행동 제안
-
-[출력 형식]
-## 발언 분류표
-| 번호 | 원문 요약 | 감정/사실/요청 | 감정 강도 | 핵심 키워드 |
-
-## 패턴 발견
-- 반복 키워드 TOP 3
-- 가장 강한 감정이 담긴 발언
-- 서로 연결되는 이슈 그룹
-
-## 간담회 활용 제안
-- 반드시 다뤄야 할 주제
-- 주의해서 다뤄야 할 민감 주제
-- 긍정적 에너지로 활용할 수 있는 발언
-
-[규칙]
-- 발언 원문을 왜곡하지 마
-- 분류가 애매한 경우 두 가지 유형을 모두 표시해
-- 항상 발언자의 의도를 존중하는 톤으로 분석해
-```
-
-### Step 2 — 테스트용 발언 예시
-
-```
-아래 발언들을 분석해줘.
-
-1. "회의가 하루에 3개씩 잡히면 언제 일해요. 진짜 미치겠어요."
-2. "신입 때 선배한테 배운 게 많았는데, 요즘은 온보딩이 너무 형식적이에요."
-3. "팀장님이 주간 회의를 격주로 바꿔주시면 좋겠어요."
-4. "솔직히 이번 프로젝트는 잘 된 것 같아요. 팀워크가 좋았어요."
-5. "성과 평가 기준을 공개해주시면 더 동기부여가 될 것 같아요."
-6. "야근이 계속되니까 가족들한테 미안하고... 이직도 생각하게 돼요."
-7. "부서 간 협업할 때 누가 의사결정권자인지 모르겠어요."
-```
-
-### Step 3 — "30분 완주" 흐름
-
-1. 텍스트 자료 준비 (인터뷰 메모·설문 자유기술)
-2. 녹음 → 텍스트 변환 (NotebookLM 활용, 4교시에서 자세히 다룸)
-3. VoE 분석가 Gem으로 구조화
-
-### 산출물 체크리스트
-
-- [ ] VoE 분석가 Gem 저장 완료
-- [ ] 본인 자료 또는 예시 발언으로 Gem 테스트 1회
-- [ ] "분류가 애매한 발언" 1개 찾아 지시사항 보완
-- [ ] Gem 링크 북마크
-
----
-
-## 1-4. 실습 ③ 페르소나 3종 Gem + 질문지
-
-> 예상 20분
-
-**장면**: 오전 11:00. 간담회 참석자가 20년 차 베테랑~MZ 신입까지 다양. 같은 질문을 던지면 반쪽짜리 답만 돌아옴.
-
-### 오늘 만들 페르소나 3종
-
-| 페르소나 | 프로필 | 대화 특성 |
-|---------|--------|-----------|
-| A — 20년 차 베테랑 | 생산기술팀, 현장 경험 풍부, 변화에 보수적 | 단도직입적, 구체적 사례로 말함, 원론적 질문에 답 안 함 |
-| B — 입사 2년 차 MZ | 경영지원팀, 디지털 네이티브, 수평적 소통 선호 | 솔직하고 직설적, 공정성에 민감, 형식보다 실질 중시 |
-| C — 팀장급 관리자 | 품질관리팀장, 위아래 눈치 모두 봄, 성과 압박 | 신중하게 발언, 조직 논리 우선, 본인·팀 의견 구분 |
-
-### Gem 인스트럭션 — 20년 차 베테랑
-
-```
-너는 제조업 현장에서 20년간 근무한 생산기술팀 김수철 과장 역할을 해줘.
-
-[프로필]
-- 나이: 48세, 입사 20년 차
-- 직군: 생산기술 (현장직)
-- 성향: 실용주의, 변화에 보수적, "해봐서 안다"는 경험 기반 사고
-- 말투: 단도직입적, 격식 없이 솔직하게, 가끔 한숨 섞인 어조
-
-[대화 규칙]
-- 원론적이거나 추상적인 질문에는 "그게 현장에서 되겠어요?"라고 반문할 것
-- 구체적인 사례를 물으면 본인 경험을 바탕으로 상세히 답변할 것
-- 회사 정책에 대해서는 "위에서 정해놓고 내려오면 어쩔 수 없지" 식의 반응
-
-[현재 고충]
-- 디지털 전환 과정에서 소외감
-- 현장 의견이 경영진에게 전달되지 않는다는 불신
-- 체력적 부담 증가에 대한 걱정
-```
-
-### Gem 인스트럭션 — 입사 2년 차 MZ
-
-```
-너는 입사 2년 차 경영지원팀 이하은 사원 역할을 해줘.
-
-[프로필]
-- 나이: 27세, 입사 2년 차
-- 직군: 경영지원 (사무직)
-- 성향: 솔직하고 직설적, 공정성과 워라밸에 민감, 불합리하면 바로 표현
-
-[대화 규칙]
-- 형식적 질문에는 짧게 답하고 본질적 질문에 길게 답할 것
-- "그건 좀 아닌 것 같은데요"라고 직접적으로 의견을 낼 것
-- 개선 제안을 구체적으로 하되, 실현 가능성은 회의적으로 반응
-
-[현재 고충]
-- 연차별 역할이 불명확, 잡무 과다
-- 수직적 보고 문화에 대한 답답함
-- "의견 내라고 해놓고 반영 안 되는" 경험 반복
-```
-
-### Gem 인스트럭션 — 팀장급 관리자
-
-```
-너는 품질관리팀장 박준영 차장 역할을 해줘.
-
-[프로필]
-- 나이: 42세, 입사 15년 차, 팀장 3년 차
-- 직군: 품질관리 (관리직)
-- 성향: 신중하고 균형 잡힌 발언, 위아래 모두 의식
-
-[대화 규칙]
-- 본인 의견과 팀 의견을 명확히 구분해서 말할 것
-- "개인적으로는 공감하지만 조직 입장에서는..." 패턴 자주 사용
-- 구체적 해결책보다 방향성 제시를 선호
-
-[현재 고충]
-- 팀원 관리와 성과 압박 사이 갈등
-- 위에서 내려오는 정책을 팀에 전달하는 역할의 피로
-- 중간관리자의 존재 가치에 대한 불안
-```
-
-### Step 3 — 각 페르소나 Gem에 동일하게 입력할 프롬프트
-
-```
-JB 담당자가 너에게 현장 간담회 인터뷰를 하려고 해.
-다음 조건에 맞는 질문 10개를 깔때기 구조로 만들어줘.
-
-[인터뷰 목적]
-- 현장에서 가장 불편한 점 파악
-- JB 활동에 대한 솔직한 평가
-- 개선 우선순위 도출
-
-[깔때기 구조]
-1단계: 아이스브레이킹 질문 2개 (편안하게 시작)
-2단계: 핵심 탐색 질문 5개 (개방형 → 구체적)
-3단계: 우선순위 질문 2개 (선택/비교형)
-4단계: 마무리 질문 1개 (한 줄 요약)
-
-[중요]
-- 너의 성향(연차, 직군, 말투)에 맞게 질문 어조를 조정해줘
-- 각 질문에 왜 이 질문이 효과적인지 한 줄 코멘트도 달아줘
-```
-
-### Step 4 — 페르소나별 질문 차이 비교
-
-| 질문 단계 | 20년 차 베테랑 | 입사 2년 차 MZ | 팀장급 관리자 |
-|-----------|--------------|--------------|-------------|
-| 아이스브레이킹 | "20년 동안 가장 달라진 게 뭐예요?" | "요즘 출근하면 제일 먼저 뭐 하세요?" | "팀장 되고 나서 가장 놀란 점이 뭐예요?" |
-| 핵심 탐색 | "현장에서 '이건 진짜 고쳐야 한다' 싶은 거 있으세요?" | "업무 중 '이건 좀 불합리하다' 느낀 적 있으세요?" | "팀원 의견이랑 회사 방침이 부딪힐 때 어떻게 하세요?" |
-| 우선순위 | "하나만 바뀌면 일이 확 편해질 것 같은 게 뭐예요?" | "3개 중 뭐가 제일 급해요?" | "팀 입장에서 먼저 해결돼야 할 건 뭔가요?" |
-| 마무리 | "오늘 꼭 전해주고 싶은 말 한마디?" | "마지막으로 하고 싶은 말 있으세요?" | "경영진이 들어야 할 한마디가 있다면?" |
-
-### 산출물 체크리스트
-
-- [ ] 페르소나 Gem 3종 각각 저장
-- [ ] 각 Gem에게 질문 생성 프롬프트를 동일하게 입력해 각 10문항 확보
-- [ ] 페르소나별 "맞춤 포인트" 1개씩 메모
-- [ ] 질문지 3종을 Docs 또는 메모 앱에 저장
-
----
-
-## 1-5. 실습 ④ 메시지 코치 Gem (선택)
-
-> 예상 10분
-
-**장면**: 오전 11:00. 지난달 인터뷰에서 나온 불편한 사실을 팀장도 참석하는 간담회에서 어떻게 전달하느냐의 문제.
-
-### Gem 인스트럭션
-
-```
-너는 관계를 해치지 않고 불편한 사실을 전달하는 메시지 코치야.
-
-[역할]
-- 어려운 대화, 민감한 피드백, 부정적 결과를 전달해야 하는 상황에서 메시지를 다듬어주는 코치
-
-[규칙]
-1. 항상 3가지 버전으로 작성:
-   - 직접적 버전: 핵심을 간결하게 전달
-   - 완곡한 버전: 배려와 공감을 앞세운 표현
-   - 질문형 버전: 상대방이 스스로 생각하게 만드는 표현
-2. 각 버전마다 "이 표현이 효과적인 상황"을 한 줄로 설명
-3. 비난, 비꼬기, 수동공격적 표현은 절대 사용하지 마
-4. 메시지 끝에 항상 "다음 단계"를 제안
-
-[출력 형식]
-## 상황 요약
-
-## 3가지 버전
-### 1. 직접적 버전
-### 2. 완곡한 버전
-### 3. 질문형 버전
-
-## 전달 시 유의사항
-```
-
-### Step 2 — 상황 입력 예시
-
-```
-지난 달 인터뷰에서 "팀장이 의견을 무시한다"는 불만이 여러 명에게서 나왔어.
-오늘 간담회에 해당 팀장도 참석하는데, 이 내용을 어떻게 전달해야 할까?
-팀장을 비난하는 게 아니라 소통 방식 개선으로 이어지게 하고 싶어.
-```
-
-### 3가지 버전 결과 비교
-
-| 버전 | 표현 예시 | 적합한 상황 |
-|------|----------|-----------|
-| 직접적 | "인터뷰 결과, 의견 반영에 대한 아쉬움이 가장 많이 언급되었습니다" | 데이터 기반 보고, 공식적인 자리 |
-| 완곡한 | "구성원들이 더 많은 대화를 원하고 있다는 신호를 발견했습니다" | 관계가 중요한 상황, 상대 체면 고려 |
-| 질문형 | "팀 내 의사소통에서 더 개선할 수 있는 부분이 있다면 무엇일까요?" | 상대가 스스로 인식하게 할 때, 코칭 상황 |
-
-### 확장 상황 연습 3종
-
-**상황 1 — 일정 지연 경영진 보고**
-```
-프로젝트 일정이 계획 대비 2주 지연되었어. 이걸 경영진에게 보고해야 하는데,
-책임 전가로 비치지 않으면서 원인과 대응 방향을 명확히 전하고 싶어.
-```
-
-**상황 2 — 팀원 보고서 품질 피드백**
-```
-팀원이 제출한 보고서 품질이 기대에 못 미쳤어. 개선점은 전달해야 하지만
-본인 의욕을 꺾고 싶지 않아.
-```
-
-**상황 3 — 간담회 요청 거절**
-```
-간담회에서 나온 요청 중 예산·규정 제약으로 들어줄 수 없는 건이 있어.
-현장 목소리를 무시하는 것처럼 보이지 않으면서도 제약 사유를 분명히 알리고 싶어.
+Use React Router v6 with nested routes.
+Use Tailwind CSS for all styling.
+Use shadcn/ui for UI components.
+Create a multi-page lecture site with the following route structure: [아래 라우트 구조 붙여넣기]
 ```
 
 ---
 
-## 1교시 체크포인트
-
-| 실습 | Gem 이름 | 주 용도 |
-|------|---------|---------|
-| 1-2 | 오늘 일정 도우미 | 매일 아침 체크리스트 자동 생성 |
-| 1-3 | VoE 분석가 | 발언·피드백 분류 & 패턴 탐지 |
-| 1-4 | 페르소나 3종 | 인터뷰·조사 대상자 시뮬레이션 |
-| 1-5 (선택) | 메시지 코치 | 민감한 피드백을 3가지 버전으로 |
-
-### 기억할 세 가지 감각
-
-1. **Gem = 역할 + 규칙 + 출력 형식의 저장소.** 매번 다시 쓰지 않아도 같은 품질이 나오는 이유.
-2. **Gem은 완성품이 아니라 운영하는 도구.** 쓰면서 지시사항을 조금씩 고쳐가는 것이 기본.
-3. **Gem 링크 공유 = 팀 자산 공유.** 프롬프트 문서에서 도구로.
-
----
-
-# 2교시 · Deep Research — 심층 리서치로 근거 만들기
-
-**JB 역량**: 주 질문하기 / 부 설득하기  
-**하루 중**: 오전~점심, 기획·의사결정 근거 수집  
-**예상 시간**: 약 55분  
-**실습 개수**: 4개
-
-> "이거 어디서 나온 숫자예요?" — 경영진 보고에서 가장 많이 듣는 질문.  
-> Deep Research = 수십 개 웹 출처를 종합해 출처가 포함된 리서치 보고서를 만드는 도구
-
-## 이 교시 흐름
-
-1. **개념·기본 사용** (10분)
-2. **실습 ① 5대 기업 조직문화 분석** (20분)
-3. **실습 ② 직군·세대별 고충 리서치** (10분, 선택)
-4. **심화: Fast Research vs Deep Research** (10분)
-5. **정리 + 체크포인트** (5분)
-
-> **이 교시가 끝나면**: 출처가 포함된 리서치 리포트 1~2건 + 재사용 가능한 **리서치 프롬프트 템플릿**
-
----
-
-## 2-1. Deep Research 개념·기본 사용
-
-> 예상 10분
-
-**Deep Research = 수십 개 웹 출처를 심층 탐색해 구조화된 리서치 보고서를 만드는 Gemini 도구.**
-
-| 항목 | 일반 Gemini 대화 | Deep Research |
-|------|----------------|---------------|
-| 검색 범위 | 기본적인 웹 검색 | 수십 개 출처를 심층 탐색 |
-| 결과 형태 | 간단한 답변 | 구조화된 리서치 보고서 |
-| 소요 시간 | 즉시 | 1~3분 |
-| 출처 | 일부만 표시 | 전체 출처 링크 포함 |
-| 적합한 용도 | 간단한 질문 | 업계 동향·벤치마크·비교 분석 |
-
-### Deep Research를 꺼내야 할 때
-
-- 여러 출처를 비교해야 하는가?
-- 경영진·이해관계자에게 "출처는 어디?"를 들을 가능성이 있는가?
-- 5분 이상의 구조화된 결과물이 필요한가?
-
-### 실행 절차
-
-1. Gemini 입력창에서 'Deep Research' 모드 진입
-2. 조사 주제·범위·출력 형식·필터 조건을 한 번에 입력
-3. 리서치 계획 검토 (방향 맞으면 진행, 틀리면 수정 요청)
-4. 1~3분 후 리포트 확인 & Google Docs로 내보내기
-
-### 업계 현황 리서치 프롬프트 예시
+## 2. 라우트 구조 (React Router)
 
 ```
-[리서치 주제]
-제조업 현장 근무자들의 최근 직원 경험(Employee Experience) 트렌드를 조사해줘.
-
-[조사해야 할 내용]
-1. 2024~2025년 제조업 현장 근무자 만족도 관련 주요 이슈
-2. 현장 구성원이 가장 많이 제기하는 불만 TOP 5 (국내 기준)
-3. 최근 기업들의 현장 소통 개선 사례 3가지
-4. JB(Junior Board) 또는 사내 소통 채널 운영 성공 사례
-
-[결과 형식]
-- 각 항목별 핵심 요약 + 출처 링크
-- 전체 분량: A4 2페이지 이내
-- 간담회 오프닝에서 언급할 수 있는 키 메시지 3개를 별도로 정리해줘
-```
-
-### 결과 활용 방법
-
-- **간담회·회의 오프닝 멘트**: "최근 조사에 따르면 현장 근무자들이 가장 많이 이야기하는 것은..."
-- **토론 질문 설계**: 업계 공통 이슈와 우리 회사 상황을 연결
-- **보고서 "배경" 섹션**: 출처 있는 한 문단으로 첫 페이지 시작
-
----
-
-## 2-2. 실습 ① 5대 기업 조직문화 분석
-
-> 예상 20분
-
-**장면**: 오전 11:30. "다른 회사는 어떻게 하고 있나요?"에 답할 출처 있는 벤치마크 수집.
-
-### Deep Research 프롬프트
-
-```
-[Deep Research 모드로 실행]
-
-국내 5대 기업(삼성·현대자동차·SK·LG·롯데) 조직문화 개선 우수 사례를 조사해줘.
-
-[조사 범위]
-- 5대 기업 각각의 최근 3년 내 조직문화 개선 프로그램
-- 구성원 소통(간담회·타운홀·VoE), 인사 제도, 일하는 방식 변화 등
-- 각 사례의 도입 배경, 운영 방식, 측정 성과(만족도·참여율·재직율 등)
-
-[출력 형식]
-기업별로 아래 구조로 정리:
-1. 기업명
-2. 대표 프로그램명 1~2개
-3. 도입 배경 (어떤 조직 문제를 해결하려 했는가)
-4. 운영 방식 (빈도, 대상, 형태)
-5. 성과 지표 (수치 포함)
-6. 우리 회사에 적용할 수 있는 시사점 1줄
-
-[조건]
-- 출처 링크 반드시 포함 (공식 보도자료·뉴스 우선)
-- 최근 3년 내 사례 우선
-```
-
-### 소스 신뢰도 평가표
-
-```
-현재 참고하는 소스마다 아래 항목을 평가해서 표 형태로 정리해줘.
-
-소스명 / 발행일 / 최신성(★★★★★) / 신뢰도(★★★★★) /
-저자 자격(★★★★★) / 편향 가능성(낮/보통/높) / 참고 가치 점수(0-10)
-```
-
-### 결과 선별 기준
-
-| 기준 | 확인 질문 | 통과 조건 |
-|------|----------|----------|
-| 유사성 | 우리 회사 규모·업종과 비슷한가? | 500인 이상, 유사 업종 |
-| 구체성 | 수치 데이터가 있는가? | 만족도·참여율 등 1개 이상 |
-| 출처 | 신뢰할 수 있는 출처인가? | 기사·논문·공식 보고서 |
-| 적용 가능성 | 우리도 할 수 있는 방법인가? | 예산·인력 현실적 범위 |
-
-### 시사점 정리 프롬프트
-
-```
-위 5대 기업 사례를 바탕으로, 우리 회사(500인 규모, 제조·서비스 복합)가
-즉시 벤치마킹할 수 있는 포인트를 3가지로 요약해줘.
-
-각 포인트에:
-- 어떤 기업 사례에서 가져온 것인지
-- 우리 회사에 적용할 때 예상되는 효과
-- 실행에 필요한 최소 리소스
-를 포함해줘.
-```
-
-### 산출물 체크리스트
-
-- [ ] Deep Research 벤치마크 리포트 저장 (출처 링크 포함)
-- [ ] 4개 선별 기준 통과한 사례 3건 표시
-- [ ] 소스 신뢰도 평가 표로 인용 가능 소스 3~5건 확정
-- [ ] 시사점 3개를 보고서용 메모로 정리
-
----
-
-## 2-3. 실습 ② 직군·세대별 고충 리서치 (선택)
-
-> 예상 10분
-
-### Deep Research 프롬프트
-
-```
-[리서치 요청]
-
-한국 제조업 현장에서 직군별, 세대별로 어떤 업무 고충을 겪고 있는지 조사해줘.
-
-[조사 범위]
-1. 현장직 (생산/기술) vs 사무직 (경영지원/관리)
-2. 베이비부머~X세대 (40대 이상) vs MZ세대 (20~30대)
-3. 중간관리자 (팀장/파트장)
-
-[각 그룹별로 알고 싶은 것]
-- 가장 자주 언급되는 불만 TOP 3
-- 조직에 바라는 점
-- 세대 간 갈등 포인트
-- 최근 2~3년간 변화 트렌드
-
-[결과 형식]
-- 그룹별로 정리된 표
-- 각 항목에 출처/근거 포함
-- JB 담당자가 간담회에서 참고할 수 있는 인사이트 요약
-```
-
-### Step 2 — 페르소나 Gem에 업데이트 지시
-
-```
-위 Deep Research 리포트의 '베이비부머~X세대 현장직' 섹션을 참고해서,
-너(20년 차 베테랑 페르소나)가 최근 가장 자주 언급한다고 조사된 고충 3가지를 본인 말투로 재현해줘.
-
-조건:
-- 리포트의 데이터를 근거로 답변에 한 번 이상 언급
-- 개인 경험에서 오는 반응도 섞어서 현실감 있게
-- 답변 끝에 "그래서 JB한테 바라는 건" 한 줄 추가
-```
-
-> **핵심**: 페르소나 Gem(시뮬레이션) + Deep Research(실제 데이터) = "현실감 있는데 근거도 있는" 준비 자료
-
----
-
-## 2-4. 심화: Fast Research vs Deep Research
-
-> 예상 10분
-
-### 핵심 비교표
-
-| 항목 | Fast Research | Deep Research |
-|------|--------------|---------------|
-| 응답 시간 | 수 초 이내 | 1~3분 (때로 5~10분) |
-| 탐색 깊이 | 상위 결과 중심 | 수십 개 출처 심층 종합 |
-| 출력 형태 | 대화형 답변 | 구조화된 리서치 보고서 |
-| 출처 표시 | 일부 링크 | 전체 출처 목록 포함 |
-| 보고서 인용 가능성 | 낮음 | 높음 |
-
-### 언제 Fast, 언제 Deep?
-
-1. 경영진·외부에 '출처 어디?'를 받을 가능성이 있는가 → 있다: **Deep**, 없다: **Fast**
-2. 여러 출처를 비교해야 하는가 → 비교·벤치마크: **Deep**, 단일 주제: **Fast**
-3. 5분 이상의 구조화된 문서가 필요한가 → 보고서 초안: **Deep**, 대화용: **Fast**
-
-### Deep Research 범용 템플릿
-
-```
-[Deep Research 모드로 실행]
-
-[리서치 주제]
-(한 줄로 좁게 정의)
-
-[조사 범위]
-1. (비교 대상 1)
-2. (비교 대상 2)
-3. (비교 대상 3)
-
-[각 대상별 알고 싶은 것]
-- (항목 1)
-- (항목 2)
-- (항목 3)
-
-[출력 형식]
-(표 / 섹션 / 불릿)
-각 항목에 출처 링크 포함
-
-[조건]
-- 최근 N년 내 자료 우선
-- 신뢰도 평가 함께 요청
-- 우리 맥락(조직 규모·업종)에 적용 시사점 1줄 포함
-
-[신뢰도 평가표]
-소스명 / 발행일 / 최신성(★) / 신뢰도(★) / 저자 자격(★) / 편향(저·중·고) / 참고 가치(0~10)
+/                          → HomePage
+/orientation/setup         → OrientationPage
+/period/1                  → Period1Page (Gems)
+/period/1/clip/01-concept  → ClipPage (동적)
+/period/1/clip/02-schedule-gem
+/period/1/clip/03-voe-gem
+/period/1/clip/04-persona-gem
+/period/1/clip/05-message-gem
+/period/1/checkpoint       → CheckpointPage
+/period/2                  → Period2Page (Deep Research)
+/period/2/clip/01-basics
+/period/2/clip/02-benchmark
+/period/2/clip/03-interview-research
+/period/2/clip/04-fast-vs-deep
+/period/2/checkpoint
+/period/3                  → Period3Page (AI Studio)
+/period/3/clip/01-overview
+/period/3/clip/02-phase-1
+/period/3/checkpoint
+/period/4                  → Period4Page (NotebookLM)
+/period/4/clip/01-rag
+/period/4/clip/02-mckinsey
+/period/4/clip/03-tips-search
+/period/4/clip/04-audio
+/period/4/clip/05-archive
+/period/4/checkpoint
+/appendix/cheatsheet-tools
+/appendix/cheatsheet-workspace
+/appendix/cheatsheet-prompts
+/appendix/cheatsheet-sheets
+/appendix/cheatsheet-pipeline
+/appendix/cheatsheet-share-page
 ```
 
 ---
 
-# 3교시 · AI Studio — 나만의 업무 도구 만들기
-
-**JB 역량**: 주 실행하기 / 부 말하기  
-**하루 중**: 오후, 맞춤 도구 설계·제작  
-**예상 시간**: 메인 25분 / 심화 110분
-
-> **"IT 부서 대기 3개월 → AI 지시 2시간."**  
-> 바이브 코딩 = 코드를 작성하는 것이 아니라, 원하는 것을 말로 설명하는 것.
-
-## 이 교시 흐름
-
-### 메인 트랙 (필수, 약 25분)
-1. AI Studio 개요·Build 진입 (5분)
-2. 실습 — 기본 앱 만들기 (Phase 1) (15분)
-3. 정리 + 체크포인트 (5분)
-
-### 심화 트랙 (선택, 약 110분)
-D-1 기능 고도화 · D-2 LG 브랜드 UI/UX · D-3 상급 확장 · D-4 Build Gallery · D-5 Temperature·System Instruction 튜닝 · D-6 Prompt Gallery
-
-> **TIP**: 처음부터 완벽을 노리지 마세요. 프롬프트 한 번에 70% 완성도를 받고, 부족한 30%는 대화로 채워 나갑니다.
-
----
-
-## 3-1. AI Studio 개요·Build 진입
-
-> 예상 5분
-
-**AI Studio = Google이 제공하는 프롬프트·모델·도구 실험 환경.**
-
-| 구분 | Gemini 앱 | AI Studio |
-|------|-----------|-----------|
-| 주 사용자 | 일반 사용자, 일상 대화 | 프롬프트·모델 실험, 앱 제작 |
-| Temperature 조정 | 불가 (자동) | 0.0~2.0 슬라이더 |
-| System Instruction | Gem으로 저장 | 직접 입력·즉시 테스트 |
-| 앱 제작 | 불가 | Build 메뉴로 자연어 앱 생성 |
-
-### Build 진입 경로
-
-1. aistudio.google.com 접속 → Google 계정 로그인
-2. 좌측 사이드바의 **'Build'** 항목 클릭
-3. **'New app'** 버튼 → 자연어로 만들고 싶은 것 설명
-
-> **Build 작동 방식**: "프롬프트 = 기획서. AI = 개발팀. 결과물 = 즉시 작동하는 앱."
-
----
-
-## 3-2. 실습 — 기본 앱 만들기 (Phase 1)
-
-> 예상 15분
-
-**만들 것**: 경쟁사의 최신 뉴스와 기술 동향을 자동으로 수집·요약하는 리서치 대시보드
-
-### Phase 1 프롬프트 (원문 그대로 사용)
+## 3. GitHub 파일 구조
 
 ```
-경쟁사의 최신 뉴스와 기술 동향을 자동으로 수집·요약하는 리서치 대시보드를 만들어줘.
-
-기능 요구사항:
-1. 검색어 입력 → Google Search로 관련 뉴스 자동 검색
-2. 각 뉴스의 핵심 내용을 3줄로 자동 요약
-3. 카테고리별 필터 (기술/비즈니스/규제)
-4. 중요도 태그 (상/중/하) 자동 분류
-5. 결과를 표 형태로 정리 + CSV 다운로드
-
-디자인: 깔끔하고 전문적인 스타일
-기본 검색어: 'LG AI 전환', '산업별 AI 전략 2026', 'AI 경쟁 동향'
-```
-
-### 실습 흐름 (15분)
-
-1. 프롬프트 입력 (2분): Build 새 앱에 원문 그대로 붙여 넣기
-2. 생성 대기·결과 관찰 (3분): 우측 미리보기 창 확인
-3. 70% 기준 점검 (3분)
-4. 대화로 30% 보정 (5분)
-5. 저장·URL 확보 (2분)
-
-### 70% 기준 — 5개 체크
-
-1. 검색어 입력창 + 검색 버튼이 렌더링된다
-2. 샘플 뉴스 결과가 표로 출력된다
-3. 카테고리 필터(기술/비즈니스/규제) 버튼이 존재한다
-4. 중요도 태그(상/중/하) 컬럼이 있다
-5. CSV 다운로드 버튼이 존재한다
-
-### 대화 보정 예시
-
-```
-"CSV 다운로드 버튼이 보이지 않아. 표 우상단에 눈에 띄게 배치해줘."
-"카테고리 필터가 단일 선택만 되는데, 복수 선택 가능하게 바꿔줘."
-"기본 검색어 3개를 앱 로드 시 자동으로 한 번씩 돌려서 초기 화면을 채워줘."
+project-root/
+├── src/
+│   ├── main.tsx
+│   ├── App.tsx                  ← 라우터 정의
+│   ├── components/
+│   │   ├── layout/
+│   │   │   ├── SiteLayout.tsx   ← 글로벌 네비게이션 + 푸터
+│   │   │   ├── SiteNav.tsx      ← 상단 교시 네비바
+│   │   │   └── PeriodSidebar.tsx ← 교시 내부 사이드바
+│   │   ├── ui/                  ← shadcn/ui 기본 컴포넌트
+│   │   ├── content/
+│   │   │   ├── TipBlock.tsx     ← TIP 콜아웃 박스
+│   │   │   ├── WarningBlock.tsx ← 주의 콜아웃 박스
+│   │   │   ├── CoreBlock.tsx    ← 핵심 콜아웃 박스
+│   │   │   ├── CodeBlock.tsx    ← 코드 블록 (복사 버튼 포함)
+│   │   │   ├── CompareTab.tsx   ← "AI 없이 vs AI 사용" 탭 비교
+│   │   │   ├── StepList.tsx     ← 번호 Step 리스트
+│   │   │   └── CheckpointList.tsx ← 체크포인트 체크박스 목록
+│   ├── pages/
+│   │   ├── HomePage.tsx
+│   │   ├── orientation/
+│   │   │   └── OrientationPage.tsx
+│   │   ├── period/
+│   │   │   ├── Period1Page.tsx   ← 1교시 인트로
+│   │   │   ├── Period2Page.tsx
+│   │   │   ├── Period3Page.tsx
+│   │   │   ├── Period4Page.tsx
+│   │   │   └── clips/
+│   │   │       ├── p1/
+│   │   │       │   ├── Clip01Concept.tsx
+│   │   │       │   ├── Clip02ScheduleGem.tsx
+│   │   │       │   ├── Clip03VoeGem.tsx
+│   │   │       │   ├── Clip04PersonaGem.tsx
+│   │   │       │   └── Clip05MessageGem.tsx
+│   │   │       ├── p2/
+│   │   │       │   ├── Clip01Basics.tsx
+│   │   │       │   ├── Clip02Benchmark.tsx
+│   │   │       │   ├── Clip03InterviewResearch.tsx
+│   │   │       │   └── Clip04FastVsDeep.tsx
+│   │   │       ├── p3/
+│   │   │       │   ├── Clip01Overview.tsx
+│   │   │       │   └── Clip02Phase1.tsx
+│   │   │       └── p4/
+│   │   │           ├── Clip01Rag.tsx
+│   │   │           ├── Clip02Mckinsey.tsx
+│   │   │           ├── Clip03TipsSearch.tsx
+│   │   │           ├── Clip04Audio.tsx
+│   │   │           └── Clip05Archive.tsx
+│   │   ├── checkpoint/
+│   │   │   ├── Checkpoint1.tsx
+│   │   │   ├── Checkpoint2.tsx
+│   │   │   ├── Checkpoint3.tsx
+│   │   │   └── Checkpoint4.tsx
+│   │   └── appendix/
+│   │       ├── CheatsheetTools.tsx
+│   │       ├── CheatsheetWorkspace.tsx
+│   │       ├── CheatsheetPrompts.tsx
+│   │       ├── CheatsheetSheets.tsx
+│   │       ├── CheatsheetPipeline.tsx
+│   │       └── CheatsheetSharePage.tsx
+│   ├── data/
+│   │   ├── navigation.ts        ← 네비 링크 배열
+│   │   ├── period1.ts           ← 1교시 콘텐츠 데이터
+│   │   ├── period2.ts
+│   │   ├── period3.ts
+│   │   ├── period4.ts
+│   │   └── appendix.ts
+│   └── styles/
+│       └── globals.css
+├── public/
+│   └── screenshots/             ← 강의 스크린샷 이미지
+│       └── 00-gemini-entry.png
+├── index.html
+├── vite.config.ts
+├── tailwind.config.ts
+├── package.json
+└── README.md
 ```
 
 ---
 
-# 4교시 · NotebookLM — 자료 기반 인사이트 추출
+## 4. Lovable 초기 프롬프트 (복붙용)
 
-**JB 역량**: 주 듣기 / 부 축적하기  
-**하루 중**: 오후~저녁, 자료 기반 인사이트 정리  
-**예상 시간**: 약 85분  
-**실습 개수**: 5개
-
-> NotebookLM = "내가 올린 자료만 읽고 답하는" **RAG 기반 리서치 도우미**
-
-## 이 교시 흐름
-
-1. NotebookLM 개념·RAG 원리 (15분)
-2. 실습 ① 맥킨지 Agentic Organization 분석 (20분)
-3. 실습 ② "제미나이 활용꿀팁" 검색 소스 실습 (20분)
-4. 실습 ③ 음성·Audio Overview (10분, 선택)
-5. 실습 ④ 팀 아카이브 구축 (15분, 선택)
-6. 정리 + 체크포인트 (5분)
-
----
-
-## 4-1. NotebookLM 개념·RAG 원리
-
-> 예상 15분
-
-| 항목 | 일반 Gemini | NotebookLM |
-|------|------------|-----------|
-| 정보 출처 | 웹 전체 학습 데이터 | 내가 올린 문서만 참조 |
-| 장점 | 폭넓은 지식 | 내 자료에 대한 정확한 분석 |
-| 환각 위험 | 있음 | 낮음 (출처가 있는 내용만 답변) |
-| 적합한 용도 | 아이디어, 초안, 리서치 | 문서 분석, 요약, Q&A |
-
-### RAG 단계별 비교
-
-| 단계 | 일반 LLM | RAG (NotebookLM) |
-|------|----------|-----------------|
-| ① 질문 수신 | 질문 → 바로 생성 | 질문 → 문서에서 관련 구절 검색 |
-| ② 근거 탐색 | 없음 | 임베딩 검색으로 상위 N개 구절 확보 |
-| ③ 답변 생성 | 학습 파라미터에서 직접 | 검색된 구절을 컨텍스트로 넣고 생성 |
-| ④ 답변 특성 | 출처 불명·환각 가능 | 출처 앵커 있음·환각 감소 |
-
-### 노트북 만들기·소스 붙이기
-
-1. notebooklm.google.com 접속 → 새 노트북 클릭
-2. 좌측 'Sources' 패널 → '소스 추가' (PDF, Google Docs/Slides, 텍스트, 웹 URL, 음성 파일 등)
-3. 소스 옆 체크 표시 뜨면 처리 완료 → 첫 질문 던지기
-
-### 출처 추적 (Grounding)
-
-1. Chat 답변의 아무 bullet이나 클릭 → 원문 구절이 소스 패널에 하이라이트
-2. 여러 소스에서 동시에 언급된 이슈 클릭 → 여러 원문 구절이 순차 하이라이트
-3. 3개 이상 소스 등장 = 전사·업계 공통 이슈 / 1개 소스만 = 국지 이슈
-
-### 기본 프롬프트 3종
+Lovable에서 새 프로젝트 생성 후 아래 프롬프트를 그대로 입력하세요.
 
 ```
-① 핵심 요약: "이 자료들의 핵심 메시지를 3줄로 요약해줘. 각 줄 끝에 출처를 달아줘."
+Build a multi-page Korean corporate AI training lecture site called "Gemini 풀코스".
 
-② 교차 분석: "소스 A와 B에서 공통으로 언급된 주제 3가지를 뽑고, 양측 입장 차이를 비교표로 만들어줘."
+Tech stack:
+- React + Vite
+- React Router v6 (nested routes)
+- Tailwind CSS
+- shadcn/ui components
 
-③ 반대 증거 찾기: "이 자료들 속에서 '주장 X'와 모순되는 구절이 있다면 전부 인용해서 보여줘."
+Design style:
+- Clean, professional, document-like (similar to technical documentation sites)
+- White background with subtle gray borders
+- Navy/dark blue accent color (#1e3a5f or similar)
+- Korean language throughout
+- Code blocks with copy button
+- Callout boxes: TIP (blue), WARNING (orange/yellow), CORE (green)
+- Side navigation within each period (chapter)
+- Top navigation bar showing all periods
+
+Route structure:
+/ → Home
+/orientation/setup → Orientation
+/period/1 → Period 1 (Gems)
+/period/1/clip/01-concept → Gems concept
+/period/1/clip/02-schedule-gem → Schedule Gem exercise
+/period/1/clip/03-voe-gem → VoE Gem exercise
+/period/1/clip/04-persona-gem → Persona Gem exercise
+/period/1/clip/05-message-gem → Message Coach Gem (optional)
+/period/1/checkpoint → Period 1 checkpoint
+(repeat pattern for periods 2, 3, 4)
+/appendix/cheatsheet-tools → Appendix cheatsheet
+
+Key UI components to build:
+1. SiteNav - top navbar with period tabs (00~04, 부록)
+2. PeriodSidebar - left sidebar with clip list for current period
+3. TipBlock - collapsible tip callout
+4. CodeBlock - syntax-highlighted code with one-click copy
+5. CompareTab - two-tab comparison (AI없이 / AI사용)
+6. StepList - numbered step list with icons
+7. CheckpointList - interactive checkbox list (saved to localStorage)
+
+Start by creating the App.tsx router structure and SiteLayout with SiteNav.
 ```
 
 ---
 
-## 4-2. 실습 ① 맥킨지 Agentic Organization 분석
+## 5. 핵심 컴포넌트 사양
 
-> 예상 20분
+### 5-1. SiteNav (상단 네비바)
 
-**대상 자료**: The agentic organization: Contours of the next paradigm for the AI era (McKinsey & Company, 2026)  
-**URL**: https://www.mckinsey.com/capabilities/people-and-organizational-performance/our-insights/the-agentic-organization-contours-of-the-next-paradigm-for-the-ai-era
-
-### Step 1 — NotebookLM에 링크 추가
-
-1. 새 노트북 생성: 이름 'Agentic Organization — 맥킨지 2026'
-2. '소스 추가' → '웹사이트' 탭 → URL 붙여넣기
-3. 처리 완료 확인 → 자동 요약 먼저 읽기
-
-> **URL이 잘 안 긁힐 때**: (1) 브라우저에서 본문 복사 → '붙여넣기 텍스트'로 추가, (2) 강사가 사전 공유하는 텍스트 파일 링크 사용
-
-### Step 2 — 맥킨지 질문 세트 10개
-
-**[구조 이해] ★필수**
-
-```
-이 문서가 말하는 'agentic organization'의 3대 구성 요소는 무엇인가?
-각 요소를 한 문장으로 설명해줘.
+```tsx
+// 탭 구조
+const navItems = [
+  { label: "00", sublabel: "오리엔테이션", href: "/orientation/setup" },
+  { label: "01", sublabel: "Gems", desc: "실행하기", href: "/period/1" },
+  { label: "02", sublabel: "Deep Research", desc: "질문하기", href: "/period/2" },
+  { label: "03", sublabel: "AI Studio", desc: "실행하기", href: "/period/3" },
+  { label: "04", sublabel: "NotebookLM", desc: "듣기", href: "/period/4" },
+  { label: "부록", sublabel: "", href: "/appendix/cheatsheet-tools" },
+]
+// 현재 경로에 따라 active 탭 하이라이트
+// 모바일: 드롭다운 또는 스크롤 가능한 탭
 ```
 
-```
-맥킨지는 agentic organization과 기존 조직의 차이를 어떻게 정의하는가? 비교표로 정리해줘.
-```
+### 5-2. PeriodSidebar (교시 내 사이드바)
 
-**[의사결정·속도] 선택**
-
-```
-이 글은 의사결정 속도와 의사결정 단계에서 어떤 변화를 예측하는가?
-구체적인 시간 단축·계층 축소 수치나 사례가 있다면 그대로 인용해줘.
-```
-
-```
-에이전트(AI agent)가 인간 관리자 대신 의사결정하게 되는 영역의 예시로 어떤 업무를 들고 있는가?
-대기업 CxO 사례 중심으로 번역해서 정리해줘.
-```
-
-**[조직·역할] ★필수(5) / 선택(6)**
-
-```
-기존 직무·직급 체계에 어떤 변화를 예측하는가? 특히 '중간 관리자'의 역할 변화를 어떻게 설명하는가?
+```tsx
+// 교시마다 다른 클립 목록 렌더링
+// 예시: Period 1
+const period1Clips = [
+  { index: "00", label: "인트로", href: "/period/1" },
+  { index: "01", label: "Gems 개념·인터페이스", href: "/period/1/clip/01-concept" },
+  { index: "02", label: "오늘 일정 도우미 Gem", href: "/period/1/clip/02-schedule-gem" },
+  { index: "03", label: "VoE 분석가 Gem", href: "/period/1/clip/03-voe-gem" },
+  { index: "04", label: "페르소나 3종 Gem + 질문지", href: "/period/1/clip/04-persona-gem" },
+  { index: "05", label: "메시지 코치 Gem", tag: "선택", href: "/period/1/clip/05-message-gem" },
+  { index: "", label: "체크포인트", href: "/period/1/checkpoint" },
+]
+// tag="선택"이면 배지 표시
 ```
 
-```
-이 글이 말하는 '새로운 역할(new roles)' 또는 '새로운 역량(skills)'은 무엇인가?
-최소 3가지를 본문에서 인용해줘.
-```
+### 5-3. CodeBlock (핵심 컴포넌트)
 
-**[위험·거버넌스] 선택**
+```tsx
+// 반드시 구현해야 할 기능:
+// 1. 복사 버튼 (우상단 고정)
+// 2. 복사 완료 시 "✓ 복사됨" 피드백 (1.5초)
+// 3. 긴 코드는 max-height + 스크롤
+// 4. 코드블록 제목 (▶ Gem 인스트럭션 — 오늘 일정 도우미) 표시
 
-```
-agentic organization이 가져오는 리스크를 본문은 어떻게 다루는가?
-국내 규제 관점(개인정보보호법·AI 기본법)까지 연결해 추가 코멘트해줘.
-```
-
-```
-거버넌스·감독 관점에서 기업이 반드시 세팅해야 할 구조가 있다면 무엇인가?
-```
-
-**[실행 전략] ★필수**
-
-```
-이 변화로 가기 위해 경영진이 '첫 6개월 안에 해야 한다고 제시하는 행동'이 있다면 리스트로 뽑아줘.
+interface CodeBlockProps {
+  title?: string       // "▶ Gem 인스트럭션 — 오늘 일정 도우미" 형태
+  code: string
+  collapsible?: boolean  // 접기/펼치기 토글
+  defaultOpen?: boolean
+}
 ```
 
+### 5-4. CompareTab (AI 없이 vs Gem 비교)
+
+```tsx
+// 원본 앱의 탭 전환 UI 재현
+interface CompareTabProps {
+  leftLabel: string   // "AI 없이 · 수기 메모"
+  rightLabel: string  // "일정 도우미 Gem"
+  leftContent: React.ReactNode
+  rightContent: React.ReactNode
+}
+// 탭 전환 시 슬라이드 애니메이션
 ```
-우리 회사(국내 제조·서비스 대기업 기준)에 이 프레임을 적용한다면,
-'가장 먼저 착수할 만한 파일럿 영역'은 무엇이라고 추론할 수 있는가? 반드시 본문 근거를 인용해 답해줘.
+
+### 5-5. CheckpointList (체크포인트)
+
+```tsx
+// localStorage로 체크 상태 유지 (브라우저 세션 간 저장)
+// "지우기" 버튼으로 초기화
+// 체크된 개수 표시: "0/3 체크됨"
+interface CheckpointItem {
+  id: string
+  label: string
+  required?: boolean
+}
 ```
 
-> **질문 우선순위**: ★필수 5개(1·2·5·9·10) 먼저 → 선택 2개 자유롭게 추가
+### 5-6. 콜아웃 박스 3종
 
----
+```tsx
+// TIP: 파란 계열 배경, 💡 아이콘
+// WARNING (주의): 노란/주황 계열, ⚠️ 아이콘
+// CORE (핵심): 초록 계열, ✅ 아이콘
+// 제목(선택)과 본문
 
-## 4-3. 실습 ② 검색 소스 — 제미나이 활용꿀팁
-
-> 예상 20분
-
-**이번 실습**: 수강생이 **직접 검색해서 여러 소스를 고르고** 하나의 노트북으로 묶어내는 **큐레이션 실습**
-
-### Step 1 — 추천 검색 키워드 5개
-
-1. "제미나이 활용 꿀팁"
-2. "Gemini 프롬프트 템플릿"
-3. "Gemini Deep Research 사례"
-4. "NotebookLM 실무 활용"
-5. "AI Studio 리서치 대시보드"
-
-### Step 2 — 좋은 소스 판별 기준
-
-| 기준 | 좋은 소스 (채택) | 의심 소스 (패스) |
-|------|----------------|----------------|
-| ① 출처 신뢰도 | Google 공식·기업 블로그·유명 실무자 뉴스레터 | 익명 블로그·광고 포스트 |
-| ② 최신성 | 2025~2026년 | 2023년 이전 |
-| ③ 구체성 | 실제 프롬프트 예시·스크린샷·단계 설명 | '편리하다·혁신적이다' 수준 |
-| ④ 검증 가능성 | 본인이 따라 해서 재현 가능 | 검증 불가능한 일반론 |
-| ⑤ 실무 관점 | 업무 맥락·직무·사례 명시 | 순수 기술 리뷰 |
-
-### Step 3 — 큐레이션 질문 세트
-
-```
-① 범위 맵핑:
-이 소스들을 모두 종합했을 때 '제미나이 활용꿀팁'은 크게 몇 개의 카테고리로 묶을 수 있는가?
-각 카테고리를 이름과 함께 정리하고, 각 카테고리에 해당하는 소스를 매핑해줘.
-
-② 베스트 프롬프트 발굴:
-이 소스들에서 제시된 프롬프트 예시 중, 가장 재사용성이 높다고 판단되는 프롬프트 5개를 골라
-원문 그대로 인용해줘. 각 프롬프트가 어느 소스에서 나왔는지 출처를 함께 붙여줘.
-
-③ 본인 업무 적용 추천:
-나는 [본인 직무/업무 1~2줄]을 담당하고 있다. 이 소스들을 기반으로 내가 다음 주부터
-당장 적용할 수 있는 팁 3개를 추천해줘. 각 팁마다 어느 소스의 어느 부분에서 나왔는지 명시해줘.
+interface CalloutProps {
+  type: "tip" | "warning" | "core"
+  title?: string
+  children: React.ReactNode
+}
 ```
 
 ---
 
-## 4-4. 실습 ③ 음성·Audio Overview (선택)
+## 6. 콘텐츠 데이터 분리 방식
 
-> 예상 10분
+콘텐츠는 **TypeScript 데이터 파일**로 분리해서 관리하면 수정이 쉽습니다.
 
-### (A) 음성 파일을 소스로 업로드
+### `src/data/period1.ts` 예시 구조
 
-1. '소스 추가' → '파일 업로드' → 녹음 파일(MP3, WAV, M4A 등) 선택 (최대 200MB)
-2. 1~2분 대기 → 소스 목록에 파일명 체크 표시 확인
-3. 소스 클릭 → 변환된 텍스트·자동 요약·화자 구분 확인
+```typescript
+export const period1Meta = {
+  number: 1,
+  tool: "Gems",
+  title: "나만의 전문가 만들기",
+  primarySkill: "실행하기",
+  secondarySkill: "축적하기",
+  timeOfDay: "오전, 반복 업무 자동화 준비",
+  estimatedMinutes: 70,
+  clipCount: 5,
+}
 
-### (B) Audio Overview — 기존 자료를 팟캐스트로
+export const period1Clips = [
+  {
+    id: "01-concept",
+    title: "Gems 개념·인터페이스",
+    estimatedMinutes: 5,
+    tag: null,
+  },
+  {
+    id: "02-schedule-gem",
+    title: "실습 ① 오늘 일정 도우미 Gem",
+    estimatedMinutes: 15,
+    tag: null,
+  },
+  {
+    id: "03-voe-gem",
+    title: "실습 ② VoE 분석가 Gem",
+    estimatedMinutes: 15,
+    tag: null,
+  },
+  {
+    id: "04-persona-gem",
+    title: "실습 ③ 페르소나 3종 Gem + 질문지",
+    estimatedMinutes: 20,
+    tag: null,
+  },
+  {
+    id: "05-message-gem",
+    title: "실습 ④ 메시지 코치 Gem",
+    estimatedMinutes: 10,
+    tag: "선택",
+  },
+]
 
-1. 노트북 우측 'Studio' 탭 클릭
-2. Audio Overview 카드 → '생성' 버튼 → 1~5분 대기
-3. 재생(1.5~2배속 지원)·공유 링크 전달 또는 다운로드
-
-### 활용 시나리오 3종
-
-| 시나리오 | 어떻게 쓰나 |
-|---------|-----------|
-| 간담회 전 이동 중 | Audio Overview를 이어폰으로 듣고 핵심 맥락 준비 |
-| 팀원 사전 브리핑 | '5분만 들어보세요'로 오디오 링크 전달 |
-| 긴 원본 대체 공유 | 녹음 원본 대신 Audio Overview 링크만 공유 |
+export const gemsConceptContent = {
+  comparisonTable: [
+    { item: "역할 설정", without: "매번 프롬프트에 붙여넣기", with: "저장된 인스트럭션 자동 적용" },
+    { item: "결과 일관성", without: "대화마다 형식이 달라짐", with: "항상 같은 구조로 출력" },
+    { item: "팀 공유", without: "프롬프트 문서로 전달", with: "Gem 링크 한 줄로 공유" },
+    { item: "적합한 상황", without: "일회성 작업", with: "반복 패턴이 있는 업무" },
+  ],
+  gemList: [
+    { num: 1, name: "오늘 일정 도우미", role: "하루 체크리스트 자동 생성", reuse: "매일 아침 반복" },
+    { num: 2, name: "VoE 분석가", role: "발언 분류·패턴 탐지", reuse: "설문·면담·녹음 정리" },
+    { num: 3, name: "페르소나 3종", role: "세대·직군별 인터뷰 대상자 시뮬레이션", reuse: "인터뷰·조사 설계" },
+    { num: 4, name: "메시지 코치", role: "민감한 사실을 3가지 버전으로", reuse: "메일·공지·피드백" },
+  ],
+}
+```
 
 ---
 
-## 4-5. 실습 ④ 팀 아카이브 구축 (선택)
+## 7. Lovable 추가 프롬프트 순서 (단계별)
 
-> 예상 15분
+Lovable은 한 번에 전체를 완성하기 어려우므로 **단계별로 프롬프트**를 입력하세요.
 
-### Google Drive 폴더 vs NotebookLM 아카이브
-
-| 항목 | Google Drive 폴더 | NotebookLM 아카이브 |
-|------|------------------|-------------------|
-| 검색 | 파일명·본문 키워드 검색 | 자연어 질문으로 검색 |
-| 요약 | 직접 열어서 읽어야 함 | AI가 핵심만 요약해줌 |
-| 연결 | 파일 간 관계 파악 어려움 | 여러 문서를 교차 분석 |
-| 온보딩 | 신규자가 전부 읽어야 함 | 질문 하나로 핵심 파악 |
-
-### 아카이브 검색 테스트 질문
+### Step 1 — 레이아웃 & 라우터
 
 ```
-핵심 이슈 검색:
-오늘 우리가 다룬 자료에서 구성원·고객·경영진이 가장 강하게 요청한 개선사항 상위 3가지는 무엇인가요?
-각 요청사항에 대해 어느 소스에서 나왔는지 원문 인용과 함께 보여주세요.
+Create the base layout with:
+- SiteLayout component with SiteNav at top
+- React Router v6 routes for all pages listed above
+- Korean font (Noto Sans KR from Google Fonts)
+- Navy primary color (#1e3a5f), white background
+- Responsive sidebar that collapses on mobile
+```
 
-교차 분석:
-우리 자료와 맥킨지 Agentic Organization 프레임을 비교했을 때,
-우리가 이미 잘하고 있는 부분과 부족한 부분은 각각 무엇인가요?
+### Step 2 — 공통 컴포넌트
 
-신규 담당자 온보딩:
-새로 우리 팀 담당자가 된 사람에게 오늘 자료의 핵심을 5분 안에 브리핑해줘.
-배경, 주요 발견, 후속 조치 순서로 정리해줘.
+```
+Create these shared content components:
+1. CodeBlock with copy button (clipboard API), collapsible option, title prop
+2. CalloutBox with type prop (tip=blue, warning=orange, core=green)
+3. CompareTab with two-tab toggle, left/right content slots
+4. StepList with numbered steps, icon support
+5. DataTable for comparison tables (responsive, with header row styling)
+6. CheckpointList with localStorage persistence and clear button
+```
+
+### Step 3 — 홈페이지
+
+```
+Create the HomePage with:
+- Hero section: "네 개의 툴, 여섯 개의 역량." heading
+- Subtitle: "Gems · Deep Research · AI Studio · NotebookLM을 교시별로 익히며..."
+- CTA button: "0교시부터 시작하기" → /orientation/setup
+- Period cards grid (4 cards): each showing period number, tool name, title, primary/secondary skill badges, clip count
+- Appendix card at bottom
+```
+
+### Step 4 — 0교시 오리엔테이션
+
+```
+Create OrientationPage at /orientation/setup with:
+- Estimated time badge: "예상 10분"
+- Scene narrative paragraph (오전 8:30 김지연 장면)
+- Table of contents with anchor links
+- Section: 강의 구조 (4-row table: 교시/메인툴/무엇을 만드는가)
+- Section: JB 6역량 (table + relationship description)
+- Section: Gemini 접속하기 (3-step numbered list)
+- Section: 오늘 실습 준비물 (bullet list)
+- Section: 실행 환경 체크리스트 (4 numbered items with detail)
+- Section: JB의 하루 07:00~17:30 (narrative paragraph)
+- Bottom nav: "다음으로 — 1교시 시작" button
+```
+
+### Step 5 — 1교시 클립들 (Gems)
+
+```
+Create all Period 1 clip pages:
+
+/period/1 - intro page with period meta, skill badges, flow timeline, CTA to first clip
+
+/period/1/clip/01-concept:
+- Comparison table (일반대화 vs Gem)
+- 3-step Gem manager walkthrough
+- 4-row Gem list table
+- TIP callout: "Gem은 완성품이 아니다"
+- Prev/Next navigation
+
+/period/1/clip/02-schedule-gem:
+- Scene paragraph (오전 8:35)
+- CompareTab (AI 없이 / 일정 도우미 Gem)
+- Step 1: 3-substep Gem creation flow
+- CodeBlock with title "▶ Gem 인스트럭션 — 오늘 일정 도우미" (full instruction)
+- Step 2: test input CodeBlock + example output table
+- Step 3: tuning tips
+- Checkbox deliverables list
+- Prev/Next nav
+
+/period/1/clip/03-voe-gem:
+- Scene paragraph
+- Comparison table (일반 Gemini vs VoE 분석가 Gem)
+- 4-step creation flow
+- CodeBlock: VoE 분석가 인스트럭션
+- Step 2: test input CodeBlock
+- TIP callout
+- Step 3: 30분 완주 3-step flow
+- Checkpoint deliverables
+- Prev/Next nav
+
+/period/1/clip/04-persona-gem:
+- Scene paragraph
+- CompareTab
+- Persona 3종 table (프로필/대화특성)
+- 5-step Gem creation flow
+- 3 CodeBlocks: 베테랑 / MZ / 팀장 인스트럭션
+- TIP callout: "말투와 대화 규칙이 핵심"
+- CodeBlock: 페르소나에게 질문 받기 프롬프트
+- CORE callout: "페르소나에게 직접 물어보기"
+- Comparison table: 페르소나별 질문 차이
+- Tone adjustment CodeBlock
+- Deliverables
+- Prev/Next nav
+
+/period/1/clip/05-message-gem:
+- Optional badge
+- Scene paragraph + CompareTab
+- 4-step creation flow
+- CodeBlock: 메시지 코치 인스트럭션
+- Test input CodeBlock
+- Result comparison table (버전/표현/적합상황)
+- WARNING callout: "3가지 중 정답은 없습니다"
+- 3 expandable additional scenarios (accordion)
+- Deliverables
+- Prev/Next nav
+```
+
+### Step 6 — 1교시 체크포인트
+
+```
+Create /period/1/checkpoint:
+- Summary table: 4 Gems created
+- "기억할 세 가지 감각" numbered list
+- CheckpointList component with 3 items (localStorage saved)
+- "다음으로" section with link to Period 2
+- Supplementary cheatsheet links
+```
+
+### Step 7 — 2교시 (Deep Research)
+
+```
+Create all Period 2 pages following same pattern:
+
+/period/2 - intro (질문하기/설득하기 badges, 55min, 4 clips)
+
+/period/2/clip/01-basics:
+- Comparison table (일반 Gemini vs Deep Research)
+- "언제 꺼내야 하나" 3-question decision guide
+- 4-step execution flow
+- CodeBlock: 업계 현황 리서치 프롬프트 예시
+- 3 result usage methods
+- CodeBlock: 후속 토론 질문 변환 프롬프트
+- TIP callouts
+
+/period/2/clip/02-benchmark:
+- Scene paragraph
+- CORE callout: "Deep Research 모드 활성화"
+- CodeBlock: 5대 기업 분석 프롬프트
+- CodeBlock: 소스 신뢰도 평가 표 프롬프트
+- WARNING callout: "이 프롬프트를 쓰는 이유"
+- 4-column selection criteria table
+- CodeBlock: 시사점 정리 프롬프트
+- Deliverables
+
+/period/2/clip/03-interview-research (선택):
+- CodeBlock: 직군·세대별 고충 리서치 프롬프트
+- Step 2: 페르소나 Gem 업데이트 CodeBlock
+- CORE callout: "시뮬레이션 + 실제 데이터"
+- 4-step practical flow
+
+/period/2/clip/04-fast-vs-deep:
+- Full comparison table (7 rows)
+- 3-step decision tree
+- 3 scenario examples (A/B/C cards)
+- "설계 프롬프트 품질이 가른다" + 4요소 list
+- CodeBlock: 범용 Deep Research 템플릿
+- Deliverables
+```
+
+### Step 8 — 3교시 (AI Studio)
+
+```
+Create all Period 3 pages:
+
+/period/3 - intro (실행하기/말하기, MAIN badge, 25min main + 110min advanced)
+
+/period/3/clip/01-overview:
+- Gemini앱 vs AI Studio comparison table
+- 3-step Build access flow
+- "Build의 작동 방식" quote box
+- TIP callout
+
+/period/3/clip/02-phase-1:
+- Goal statement
+- CodeBlock: Phase 1 리서치 대시보드 프롬프트 (full)
+- 5-step flow timeline (15min breakdown)
+- TIP box: "70% 기준 — 5개 체크" (checklist style)
+- 3 correction request CodeBlocks
+- CORE callout: "핵심 원칙"
+- Next step options (메인 마무리 / 심화 계속)
+```
+
+### Step 9 — 4교시 (NotebookLM)
+
+```
+Create all Period 4 pages:
+
+/period/4 - intro (듣기/축적하기, 85min, 5 clips)
+
+/period/4/clip/01-rag:
+- DEEP DIVE badge
+- 일반Gemini vs NotebookLM table
+- RAG 4-stage comparison table
+- 3-step notebook setup flow
+- "출처 추적" 3-step walkthrough
+- 3 base prompt CodeBlocks
+
+/period/4/clip/02-mckinsey:
+- Target document with external link
+- Step 1: 3-step NotebookLM setup
+- TIP: URL fallback 2가지
+- Step 2: 10 question CodeBlocks (grouped: 필수★/선택)
+- TIP: question priority guide
+- Step 3: Audio Overview + share flow
+- Checkpoint summary
+
+/period/4/clip/03-tips-search:
+- Rationale paragraph
+- 5 recommended keywords (badge list)
+- Search channel tips
+- 5-column source quality table
+- CodeBlock: 소스 신뢰도 평가 표 프롬프트
+- Step 3: 4-step curation flow
+- 3 curation question CodeBlocks
+- TIP: 자산화 안내
+
+/period/4/clip/04-audio (선택):
+- Section A: 음성 파일 업로드 3-step
+- WARNING: 음성 업로드 팁
+- Section B: Audio Overview 3-step
+- Usage scenario table (3 rows)
+
+/period/4/clip/05-archive (선택):
+- Drive폴더 vs NotebookLM table
+- 4-step archive build flow
+- 3 test query CodeBlocks
+- Audio Overview sharing steps
+- TIP: "만드는 것보다 유지하는 것"
+```
+
+### Step 10 — 부록 치트시트
+
+```
+Create /appendix/cheatsheet-tools:
+- Quick-access link list (6 URLs)
+- 4-tool comparison table
+- Per-tool cheatsheet sections with:
+  - How-to table
+  - Common mistakes TIP callout
+- "어느 도구로 갈까?" decision guide (6 bullet rules)
+- Common habits list (5 items)
+- Links to other 5 cheatsheets
+
+(cheatsheet-workspace, cheatsheet-prompts, cheatsheet-sheets,
+ cheatsheet-pipeline, cheatsheet-share-page 는 동일 패턴으로 추가)
 ```
 
 ---
 
-# 📎 부록 · 치트시트 — 도구 개요
+## 8. 스타일 가이드 (Tailwind 기준)
 
-## 접속 링크 모음
+```
+색상:
+- Primary (네이비): #1e3a5f → text-[#1e3a5f], bg-[#1e3a5f]
+- Accent: #2563eb (blue-600)
+- Background: white (#ffffff)
+- Surface: gray-50 (#f9fafb)
+- Border: gray-200 (#e5e7eb)
+- Text: gray-900 (본문), gray-600 (보조)
 
-- **Gemini**: gemini.google.com
-- **Gems 관리자**: gemini.google.com/gems/view
-- **AI Studio**: aistudio.google.com
-- **NotebookLM**: notebooklm.google.com
-- **Google Docs·Sheets·Slides**: docs / sheets / slides.google.com
+TIP 박스: bg-blue-50, border-l-4 border-blue-400, text-blue-900
+WARNING 박스: bg-amber-50, border-l-4 border-amber-400, text-amber-900
+CORE 박스: bg-green-50, border-l-4 border-green-500, text-green-900
 
----
+코드블록: bg-gray-900, text-gray-100, font-mono, rounded-lg
+선택(optional) 배지: bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded
 
-## 4개 메인 도구 한눈 비교
+교시 번호 배지:
+- 큰 숫자 (01, 02...): text-6xl font-bold text-gray-100 (배경처럼)
+- 역량 배지: bg-blue-100 text-blue-800 (주), bg-gray-100 text-gray-600 (부)
 
-| 도구 | 핵심 용도 | 언제 불러오는가 |
-|------|----------|----------------|
-| Gems | 역할·규칙·출력 형식을 저장한 나만의 Gemini | 같은 패턴이 주 1회 이상 반복될 때 |
-| Deep Research | 여러 소스를 자동 탐색해 출처 포함 리포트 작성 | 벤치마크·트렌드·조직문화 등 근거가 필요할 때 |
-| AI Studio | 프롬프트로 웹앱·대시보드를 즉석 생성 (Build) | 내 업무에 딱 맞는 도구가 시장에 없을 때 |
-| NotebookLM | 내 자료를 소스로 올리고 그 근거 안에서만 답하게 | 자료 덩어리에서 인사이트를 추출할 때 |
-
----
-
-## 1교시 Gems — 치트시트
-
-| 항목 | 내용 |
-|------|------|
-| 만들기 | 좌측 사이드바 → Gem 관리자 → '새 Gem 만들기' |
-| 핵심 3칸 | 이름 · 지시사항(Instruction) · 지식(Knowledge, 선택) |
-| 저장 후 첫 동작 | 오른쪽 미리보기에서 3~5회 테스트하며 지시사항 다듬기 |
-| 공유 | 링크 복사 → 팀 전달. 같은 Gem을 여러 명이 재사용 |
-
-**자주 나오는 실수**:
-- 지시사항이 너무 짧아서 결과가 달라짐 → **역할·규칙·출력 형식** 3블록 명시
-- 한 Gem에 역할 2~3개 섞음 → **한 Gem = 한 역할** 원칙
-- 만들자마자 끝 → **쓰면서 지속 다듬기**가 기본
+하단 prev/next 네비: border-t pt-8 flex justify-between
+```
 
 ---
 
-## 2교시 Deep Research — 치트시트
+## 9. GitHub README.md (루트에 추가)
 
-| 항목 | 내용 |
-|------|------|
-| 진입 | Gemini 상단 모델/모드 선택 드롭다운 → Deep Research |
-| 사용 순서 | ① 시드 질문 → ② 계획 검토·수정 → ③ 리서치 실행 → ④ 리포트 수령 |
-| Fast vs Deep | Fast = 즉시 요약·일반 질문 / Deep = 구조화된 보고서 |
-| 최적 쿼리 | 주제 + 조사 범위 + 출력 형식 |
+```markdown
+# Gemini 풀코스 — JB AX 교육 강의 사이트
 
-**자주 나오는 실수**:
-- 질문이 너무 넓어 일반론만 나옴 → 범위·기간·비교 대상을 구체적으로 제한
-- 계획(Plan) 단계를 그냥 Run → **30초 계획 검토**가 품질을 바꿈
-- 출처 없이 본문만 복사 → **원문 링크 + 날짜**를 같이 남겨야 설득력 유지
+LG전자 Junior Board(JB) 대상 Gemini AI 툴 중심 4교시 강의 웹사이트입니다.
 
----
+## 구조
 
-## 3교시 AI Studio — 치트시트
+| 교시 | 툴 | 주 역량 |
+|------|-----|---------|
+| 0교시 | 오리엔테이션 | 환경 세팅 |
+| 1교시 | Gems | 실행하기 |
+| 2교시 | Deep Research | 질문하기 |
+| 3교시 | AI Studio | 실행하기 |
+| 4교시 | NotebookLM | 듣기 |
 
-| 항목 | 내용 |
-|------|------|
-| 진입 | aistudio.google.com → 좌측 메뉴 'Build' 선택 |
-| Phase 1 기본 | 프롬프트 → 미리보기 → 수정의 3단 루프 |
-| 튜닝 패널 | Temperature(창의성) · System Instruction(역할·규칙) |
-| 저장·공유 | 좌측 상단 프로젝트 이름 편집 → Save → 링크 공유 |
+## 로컬 실행
 
-**자주 나오는 실수**:
-- "대시보드 만들어줘" 한 줄로 끝 → **차트 유형·필터·색상 규칙**까지 명시
-- Temperature 기본값으로 방치 → 창의 요청은 0.8~1.0, 판정·분류는 0.2 이하
-- System Instruction에 배경 설명만 → **금지 사항(Don't)** 1~2줄 추가 시 정확도 상승
+\`\`\`bash
+npm install
+npm run dev
+\`\`\`
 
----
+## 콘텐츠 수정
 
-## 4교시 NotebookLM — 치트시트
+각 교시 콘텐츠는 `src/data/period{N}.ts` 파일에서 관리합니다.
+코드블록, 프롬프트, 테이블 데이터를 변경하면 해당 페이지에 즉시 반영됩니다.
 
-| 항목 | 내용 |
-|------|------|
-| 진입 | notebooklm.google.com → '새 노트북' |
-| 소스 추가 | PDF · Google Docs · 웹 URL · 텍스트 · 녹음 등 최대 50개 |
-| 질문 범위 | 업로드한 소스 안에서만 답함 (Closed-book) |
-| Audio Overview | 업로드 자료를 2인 팟캐스트 형태로 자동 요약 |
+## 배포
 
-**자주 나오는 실수**:
-- 소스 없이 질문부터 → 소스 없으면 일반 Gemini보다 약함
-- 소스를 50개까지 꽉 채움 → **10~20개**가 답변 품질 최적
-- 노트북 한 개에 다 넣음 → **프로젝트당 1 노트북** 원칙
+Vercel 연동 후 main 브랜치 push 시 자동 배포됩니다.
+```
 
 ---
 
-## "어느 도구로 갈까?" 판단 지도
+## 10. 주의사항 & 팁
 
-- **같은 분석을 반복해야 한다** → 1교시 Gems
-- **근거·출처가 필요한 조사 리포트** → 2교시 Deep Research
-- **이 작업만 하는 미니 웹앱이 필요** → 3교시 AI Studio Build
-- **내 자료를 읽고 그 안에서 답하게** → 4교시 NotebookLM
-- **Docs·Sheets·Slides·Gmail 안에서 바로** → 부록 · Workspace 연계
-- **Sheets 셀 단위 자동 분류·분석** → 부록 · Sheets 활용
+### Lovable에서 자주 막히는 포인트
 
----
+| 상황 | 해결 방법 |
+|------|----------|
+| 라우트가 중첩되어 네비가 사라짐 | `<Outlet />`을 SiteLayout에 명시적으로 배치 |
+| 코드블록 복사 버튼이 안 됨 | `navigator.clipboard.writeText()` + HTTPS 확인 |
+| 한국어 폰트가 깨짐 | `index.html` `<head>`에 Google Fonts Noto Sans KR 링크 추가 |
+| 체크포인트 상태가 새로고침 시 사라짐 | localStorage 키를 페이지별로 분리 (`checkpoint-p1`, `checkpoint-p2`...) |
+| 사이드바가 모바일에서 메인 콘텐츠를 가림 | `lg:block hidden` + 햄버거 토글 버튼 추가 |
 
-## 공통 단축·습관 5가지
+### 콘텐츠 추가·수정 워크플로우
 
-1. **북마크 5개**를 책상에 고정: Gemini / Gems / AI Studio / NotebookLM / 본인 드라이브
-2. 프롬프트는 **Gem으로 저장** — 같은 프롬프트를 두 번 타이핑하면 신호
-3. 결과물은 **링크 + 날짜**로 남기기 (다음 분기 재사용 시 추적 가능)
-4. 큰 작업은 **한 도구 → 다음 도구 파이프라인**으로 (예: Deep Research → NotebookLM 소스 추가)
-5. **주 1회 정리**: 이번 주에 만든 Gem·노트북·앱 중 살릴 것만 남기기
-
----
-
-## 부록 치트시트 목록
-
-1. [도구 개요] — 이 페이지
-2. [Workspace 연계] — 만든 Gem을 Docs·Gmail·Sheets에서 바로 부르기
-3. [프롬프트 모음] — 역할·맥락·형식·톤 4원칙과 실전 예시
-4. [Sheets 활용] — =GEMINI() 함수, 셀 단위 분류·분석
-5. [백서 파이프라인] — Deep Research → NotebookLM → AI Studio 연계 흐름
-6. [공유 웹페이지 Canvas] — Canvas로 만든 결과물 공유 방법
+1. `src/data/period{N}.ts` 에서 데이터 수정
+2. 해당 클립 페이지 컴포넌트에서 데이터 import하여 렌더링
+3. 새 클립 추가 시: data 파일 → 클립 컴포넌트 → App.tsx 라우트 → sidebar 배열 순으로 추가
